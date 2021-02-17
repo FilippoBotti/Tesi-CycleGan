@@ -1,11 +1,11 @@
-\chapter{Cycle Gan e GradCam}
+\chapter{Sistema Realizzato}
 In questo capitolo illustreremo l'architettura del nostro progetto e andremo ad analizzare il codice. Partiremo con la definizione del problema della traduzione da immagine a immagine e vedremo com'è composta la rete che abbiamo utilizzato.
 
 \section{Image to Image Translation}
 (Ho pensato di strutturarla così: breve introduzione sul problema, spiegazione sul perchè pix2pix non sia la soluzione che usiamo, introduzione a cyclegan)\\
 Vi siete mai chiesti come sarebbe bello poter ottenere una foto a colori da una foto in bianco e nero? Oppure avere la possibilità di passare da una foto ritraente un paesaggio estivo a un paesaggio autunnale?
-\\Questi sono solamente alcuni degli esempi di applicazioni della traduzione da immagine a immagine. La traduzione da immagine ad immagine è molto simile a ciò che accade nella traduzione da lingua a lingua: partendo da un'immagine appartenente ad un dominio iniziale, come la foto di un paesaggio estivo, vogliamo ottenere un'immagine appartenente ad un altro dominio, ad esempio passando da paesaggio estivo a paesaggio autunnale.
-\\Un esempio di traduzione da immagine a immagine è il già trattato Pix2Pix che, grazie ad una GAN condizionata addestrata con un training set paired, di cui un esempio in figura \ref{fig:Paired and Unpaired training set}, produce un output condizionato dall'immagine di input.
+\\Questi sono solamente alcuni degli esempi di applicazioni della image-to-image translation. L'image-to-image translation è molto simile a ciò che accade nella traduzione da lingua a lingua: partendo da un'immagine appartenente ad un dominio iniziale, come la foto di un paesaggio estivo, vogliamo ottenere un'immagine appartenente ad un altro dominio, ad esempio passando da paesaggio estivo a paesaggio autunnale.
+\\Un esempio di image-to-image translation è il già trattato Pix2Pix \cite{isola2018imagetoimage} che, grazie ad una GAN condizionata addestrata con un training set \emph{paired}, di cui un esempio in figura \ref{fig:Paired and Unpaired training set}, produce un output condizionato dall'immagine di input.
 \\Tuttavia, l'approccio Pix2Pix fin qui descritto non è del tutto efficiente in quanto il training set della rete comporta un notevole sforzo nella sua creazione. Infatti, tornando all'esempio dei paesaggi, occorrebbe avere un enorme quantitativo di foto ritraenti lo stesso identico paesaggio in due differenti momenti dell'anno. In aggiunta, per alcune applicazioni sarebbe del tutto impossibile ottenere un training set di questo tipo: basti pensare alla traduzione da opere d'arte a foto, o all'applicazione di uno stile a immagini reali, come vedremo più avanti nel nostro caso quando vorremo trasformare cavalli in zebre e viceversa.
 
 \begin{figure}[H]
@@ -64,27 +64,64 @@ La prima classe che andiamo a definire è la classe \href{https://github.com/jun
 Come prima cosa andremo a definire le reti Generatrici, che nel nostro progetto saranno composte attraverso un'architettura ResNet avente nove blocchi residui. Notiamo come durante l'inizializzazione del Generatore sia possibile andare a specificare alcuni parametri, per cambiare il comportamento della rete. Tra questi troviamo la tipologia dell'architettura utilizzata, la quale, nel nostro caso, sarà, come detto, una ResNet.
 
 \begin{minted}[bgcolor=lightGray]{python}
-def define_G(input_nc, output_nc, ngf, netG, norm='batch',
-            use_dropout=False, init_type='normal',             
-            init_gain=0.02, gpu_ids=[]):
-                
-    norm_layer = get_norm_layer(norm_type=norm)
+ResnetGenerator(
+    (model): Sequential(
+      (0): ReflectionPad2d
+      (1): Conv2d
+      (2): InstanceNorm2d
+      (3): ReLU
+      (4): Conv2d
+      (5): InstanceNorm2d
+      (6): ReLU
+      (7): Conv2d
+      (8): InstanceNorm2d
+      (9): ReLU
+      (10): ResnetBlock
+      (11): ResnetBlock
+      (12): ResnetBlock
+      (13): ResnetBlock
+      (14): ResnetBlock
+      (15): ResnetBlock
+      (16): ResnetBlock
+      (17): ResnetBlock
+      (18): ResnetBlock
+      (19): ConvTranspose2d
+      (20): InstanceNorm2d)
+      (21): ReLU
+      (22): ConvTranspose2d
+      (23): InstanceNorm2d
+      (24): ReLU
+      (25): ReflectionPad2d
+      (26): Conv2d
+      (27): Tanh
+    )
+)
 
-    if netG == 'resnet_9blocks':
-        net = ResnetGenerator(input_nc, output_nc, ngf,
-                            norm_layer=norm_layer,
-                            use_dropout=use_dropout,
-                            n_blocks=9)
 \end{minted}
 Con codice analogo vengono successivamente definite le reti Discriminatrici. Anche in questo caso sarebbe possibile specificare ulteriori parametri per cambiare il tipo di rete utilizzato. Si distinguono tre tipologie di Discriminatore: \emph{basic}, \emph{n-layer} e \emph{pixel}. Nella nostra rete utilizzeremo il discriminatore Basic, il quale suddivide l'immagine in parti composte da 70x70 pixel e per ognuna di queste viene effettuata una classificazione tra reale e fake.
-\\Successivamente viene definita la Loss della GAN, nel nostro progetto utilizzeremo una MSELoss.
 \begin{minted}[bgcolor=lightGray]{Python}
- def __init__(self, gan_mode, target_real_label=1.0,
-                 target_fake_label=0.0):
-    if gan_mode == 'lsgan':
-        self.loss = nn.MSELoss()
+NLayerDiscriminator(
+    (model): Sequential(
+      (0): Conv2d
+      (1): LeakyReLU
+      (2): Conv2d
+      (3): InstanceNorm2d
+      (4): LeakyReLU
+      (5): Conv2d
+      (6): InstanceNorm2d
+      (7): LeakyReLU
+      (8): Conv2d
+      (9): InstanceNorm2d
+      (10): LeakyReLU
+      (11): Conv2d
+    )
+  )
 \end{minted}
-Proseguendo all'interno del codice vengono definiti i blocchi residui della nostra ResNet. Come detto in precedenza la nostra rete sarà composta da nove blocchi residui. I blocchi residui vengono utilizzati nel Deep Learning al fine di poter ottenere una maggiore profondità della rete. Infatti, se anzichè utilizzare una ResNet utilizzassimo un'altra architettura, sarebbe errato parlare di precisione della rete proporzionale alla sua profondità, in quanto subentrerebbe il problema del \emph{gradiente di fuga}, secondo il quale il gradiente si annullerà a causa dei troppi livelli. Per questo motivo vengono introdotte le ResNet, le quali attraverso \emph{salti} tra i layer che compongono i blocchi residui, riescono ad evitare questo problema \cite{targ2016resnet}.
+
+
+Successivamente viene definita la Loss della GAN, nel nostro progetto utilizzeremo una \emph{Mean Squared Error Loss}:
+$${\displaystyle MSE={\frac {\sum _{i=1}^{n}(x_{i}-{\widehat {x}}_{i})^{2}}{n}}}$$
+Proseguendo all'interno del codice vengono definiti i blocchi residui della nostra ResNet. Come detto in precedenza la nostra rete sarà composta da nove blocchi residui. I blocchi residui vengono utilizzati nel Deep Learning al fine di poter ottenere una maggiore profondità della rete. Infatti, se anzichè utilizzare una ResNet utilizzassimo un'altra architettura, sarebbe errato parlare di precisione della rete proporzionale alla sua profondità, in quanto subentrerebbe il problema del \emph{vanishing gradient}, secondo il quale il gradiente si annullerà a causa dei troppi livelli. Per questo motivo vengono introdotte le ResNet, le quali attraverso \emph{salti} tra i layer che compongono i blocchi residui, riescono ad evitare questo problema \cite{targ2016resnet}.
 \\Ogni blocco residuo è composto da i seguenti layer:
 \begin{minted}[bgcolor=lightGray]{Python}
 ResnetBlock(
@@ -100,25 +137,7 @@ ResnetBlock(
 \end{minted}
 \subsection{Cycle GAN Model}
 Dopo aver descritto come viene definita l'architettura della rete, possiamo descrivere come la Cycle GAN è implementata. 
-\\Come prima cosa occorre ovviamente costruire i due generatori e i due discriminatori, richiamando i sopra citati metodi della classe networks:
-\begin{minted} [bgcolor=lightGray] {Python}
-self.netG_A = networks.define_G(opt.input_nc, opt.output_nc,
-                        opt.ngf, opt.netG, opt.norm,
-                        not opt.no_dropout, opt.init_type,
-                        opt.init_gain, self.gpu_ids)
-self.netG_B = networks.define_G(opt.output_nc, opt.input_nc,
-                        opt.ngf, opt.netG, opt.norm,
-                        not opt.no_dropout, opt.init_type,
-                        opt.init_gain, self.gpu_ids)
-self.netD_A = networks.define_D(opt.output_nc, opt.ndf,
-                        opt.netD,opt.n_layers_D, opt.norm,
-                        opt.init_type, opt.init_gain,
-                        self.gpu_ids)
-self.netD_B = networks.define_D(opt.input_nc, opt.ndf,
-                        opt.netD,opt.n_layers_D, opt.norm,
-                        opt.init_type,opt.init_gain,
-                        self.gpu_ids)
-\end{minted}
+\\Come prima cosa occorre ovviamente costruire i due generatori e i due discriminatori, richiamando i sopra citati metodi della classe networks.
 Successivamente definiamo il comportamento dei Generatori che avranno il compito di generare le immagini fake attraverso le quali andremo a calcolare la Loss:
 \begin{minted}[bgcolor=lightGray]{Python}
 def forward(self):
@@ -154,15 +173,16 @@ Abbiamo quindi definito tutti i punti più importanti delle classi che definisco
 \\Per l'addestramento della rete si è scelto di utilizzare Google Colab, un ambiente gratuito offerto dalla Google che mette a disposizione le proprie schede grafiche per addestrare reti di questo tipo. 
 \\L'addestramento si basa su epoche e per la nostra rete il numero di epoche fissato è pari a 200.
 \\Per quanto riguarda i tempi di addestramento essi ovviamente variano a seconda della rete che si vuole addestrare. Nel nostro caso i tempi impiegati dalla Cycle GAN fin qui descritta erano dell'ordine dei minuti per epoca, indicativamente dieci. Per le modifiche successive che apporteremo alla rete vedremo come il tempo necessario all'addestramento aumenterà, fino ad arrivare a oltre quaranta minuti per epoca per la Cycle GAN addestrata grazie all'utilizzo di GradCam su quattro blocchi residui, che descriveremo nei capitoli successivi.
-\\(parlo qui delle modifiche che ho fatto io al codice, quindi aggiungendo una sezione contenente la spiegazione di GradCam.py e di come collabori con cycle-gan-model.py, oppure lo faccio nel prossimo capitolo?)
+
 
 \section{GradCam}
-Nel capitolo precedente abbiamo trattato l'algoritmo GradCam definendolo come un algoritmo in grado di associare una risposta visiva al comportamento della rete, indicandoci attraverso una mappa di calore dove la rete pone la propria attenzione durante la generazione delle immagini. L'idea è quindi quella di sfruttare GradCam al fine di indirizzare l'attenzione della rete durante la generazione delle immagini. Idealmente, infatti, le mappe di attenzione durante la ricostruzione dell'immagine iniziale, quindi dal dominio $B$ al dominio $A$, dovrebbero essere uguali a quelle della trasformazione da $A$ a $B$. Infatti, tornando all'esempio del dataset cavalli e zebre, ci aspettiamo che se la mappa di attenzione generata dalla rete durante la trasformazione da cavallo a zebra si focalizza sulla sagoma del cavallo per inserirne le strisce bianche e nere, anche l'attenzione generata dalla ricostruzione da zebra fake a cavallo si focalizzi negli stessi punti della precedente, in modo tale da rimuovere le strisce aggiunte e riportare il manto del cavallo allo stato iniziale. Il ragionamento è molto simile alla già illustrata consistenza del ciclo per le CycleGAN: deve esserci consistenza tra le mappe di attenzione. Lo scopo del nostro progetto è dunque quello di introdurre una nuova loss che indichi questa uguaglianza. 
+(Ho pensato di strutturarla così: richiamo a quanto fa gradcam definito nei capitoli precedenti, spiegazione del perchè utilizziamo gradcam, definizione parametri usati (layer e output classificazione), spiegazione codice, implementazione gradcam e cyclegan)\\
+Nel capitolo precedente abbiamo trattato l'algoritmo GradCam definendolo come un algoritmo in grado di associare una risposta visiva al comportamento della rete, indicandoci attraverso una mappa di calore dove la rete pone la propria attenzione durante la generazione delle immagini. L'idea è quindi quella di sfruttare GradCam al fine di indirizzare l'attenzione della rete durante la generazione delle immagini. Idealmente, infatti, le mappe di attenzione durante la ricostruzione dell'immagine iniziale, quindi dal dominio $B$ al dominio $A$, dovrebbero essere uguali a quelle della trasformazione da $A$ a $B$. Infatti, tornando all'esempio del dataset cavalli e zebre, ci aspettiamo che, se la mappa di attenzione generata dalla rete durante la trasformazione da cavallo a zebra si focalizza sulla sagoma del cavallo, per inserirne le strisce bianche e nere, anche l'attenzione generata dalla ricostruzione da zebra fake a cavallo si focalizzi negli stessi punti della precedente, in modo tale da rimuovere le strisce aggiunte e riportare il manto del cavallo allo stato iniziale. Il ragionamento è molto simile alla già illustrata consistenza del ciclo per le CycleGAN: deve esserci consistenza tra le mappe di attenzione. Lo scopo del nostro progetto è dunque quello di introdurre una nuova loss che indichi questa uguaglianza. 
 
-\subsection{Implementazione}
+\subsection{Codice e Implementazione}
 Vediamo ora come applicare il ragionamento fin qui spiegato. Come prima cosa occorre definire i parametri su cui lavora GradCam. Come già accennato nei capitoli precedenti, GradCam lavorà sui layer di una rete, quindi occorrerà scegliere tra i layer che compongono la nostra rete quelli sui quali andare a generare le mappe di attenzione. Oltre a questo, occorre andare a definire qual è l'output di classificazione su cui effettuare la backpropagation. Nel nostro caso non abbiamo un vero e proprio output di classificazione, ma possiamo sfruttare l'output del Discriminatore come tale. Infatti il comportamento del Discriminatore è molto simile ad un classificatore: possiamo vedere la determinazione tra immagine vera o immagine fake come una vera e propria classificazione. 
 \\Abbiamo quindi definito tutti i parametri fondamentali per implementare GradCam in una CycleGAN, possiamo concentrarci ora sull'analisi delle istruzioni fondamentali.
-Prima di procedere con l'analisi del codice, però, dobbiamo definire su quali layer ricavare le mappe di attenzione da utilizzare per il calcolo della Loss sopra citata. La rete generatrice, infatti, è composta da 23 blocchi sui quali è possibile andare a generare le mappe di attenzione. Idealmente, si potrebbero utilizzare tutti e 23 i layer, magari associando un peso diverso per ognuni di essi, ma non è una strada ottimale, in quanto non tutti i layer sono utili al nostro scopo. La scelta dei layer su cui calcolare la Loss ricade quindi sui nove blocchi residui della rete, in quano come vediamo in figura \ref{fig:GradCam Horse},  sono i layer che offrono i risultati migliori. Come vedremo successivamente, i risultati migliori sono quelli ottenuti utilizzando solo l'ultimo blocco residuo per calcolare la Loss di consistenza dell'attenzione. 
+Prima di procedere con l'analisi del codice, però, dobbiamo definire su quali layer ricavare le mappe di attenzione da utilizzare per il calcolo della Loss sopra citata. La rete generatrice, infatti, è composta da 23 blocchi sui quali è possibile andare a generare le mappe di attenzione. Idealmente, si potrebbero utilizzare tutti e 23 i layer, magari associando un peso diverso per ognuni di essi, ma non è una strada ottimale, in quanto non tutti i layer sono utili al nostro scopo. La scelta dei layer su cui calcolare la Loss ricade quindi sui nove blocchi residui della rete, in quanto, come vediamo in figura \ref{fig:GradCam Horse},  sono i layer che offrono i risultati migliori. Come vedremo successivamente, i risultati migliori sono quelli ottenuti utilizzando solo l'ultimo blocco residuo per calcolare la Loss di consistenza dell'attenzione. 
 
 \begin{figure}[H]
   \begin{center}
@@ -172,7 +192,6 @@ Prima di procedere con l'analisi del codice, però, dobbiamo definire su quali l
   \label{fig:GradCam Horse}
 \end{figure}
 
-\subsection{Codice}
 Dopo aver definito tutti i parametri sui quali lavorare possiamo soffermarci sul codice necessario a realizzare quanto spiegato fin'ora. 
 Definiamo in primo luogo la classe FeatureExtractor, la quale ha il compito di salvare il gradiente dei layer scelti per generare le mappe di attenzione. 
 \begin{minted}[bgcolor=lightGray] {Python}
@@ -190,8 +209,8 @@ def __call__(self, x):
             outputs += [x]
     return outputs, x
 \end{minted}
-Come vediamo scorriamo tutti i layer della rete e li applichiamo all'immagine $x$. Successivamente verifichiamo se il layer in questione è tra quelli sui quali vogliamo generare le mappe di attenzione: in caso affermativo salviamo il gradiente e ne salviamo l'output in uscita dal Generatore, precedentemente calcolato, in una lista.
-\\Successivamente definiamo la classe ModelOutputs, che ha il compito di sfruttare l'output del Discriminatore per generare le mappe di attenzione.
+Come vediamo attraverso un ciclo si scorrono tutti i layer della rete e vengono applicati all'immagine $x$. Successivamente viene verificato se il layer in questione è tra quelli sui quali vogliamo generare le mappe di attenzione: in caso affermativo viene salvato il gradiente e l'output in uscita dal Generatore, precedentemente calcolato, viene salvato in una lista.
+\\Dopodichè definiamo la classe ModelOutputs, avente il compito di sfruttare l'output del Discriminatore per generare le mappe di attenzione.
 
 \begin{minted}[bgcolor=lightGray]{Python}
 class ModelOutputs():
@@ -219,11 +238,11 @@ class ModelOutputs():
                 x = module(x)
                 x = self.discriminator(x)
         return target_act, x
-
 \end{minted}
-Vediamo come si scorrano tutti i layer del Generatore e per ognuno di essi si verifichi se è tra quelli su cui vogliamo generare l'attenzione: in caso affermativo, viene salvato il gradiente, grazie alla classe FeatureExtractor sopra citata. Infine, per ogni layer ne viene calcolato l'output, generando quindi l'immagine fake. L'immagine generata viene di conseguenza passata al discriminatore, al fine di determinare l'output di classificazione necessario a GradCam per generare le mappe di attenzione.
-Infine, definiamo la classe GradCam avente il compito di generare, grazie all'utilizzo delle classi precedenti, le mappe di attenzione.
-Dopo aver richiamato il metodo dell'estrazione delle features, determiniamo un tensore \emph{one\_hot} contente la media dei valori di classificazione determinati dal Discriminatore su cui andiamo a fare la backpropagation. Successivamente, andiamo a definire il tensore \emph{grads\_val}, attraverso il quale andiamo a recuperare i gradienti precedentemente salvati. Infine, tramite questi gradienti, viene definita la mappa di attenzione \emph{cam} cercata.
+
+Vediamo come si scorrano tutti i layer del Generatore e per ognuno di essi si verifichi se sia tra quelli su cui si vuole generare l'attenzione: in caso affermativo, viene salvato il gradiente grazie alla classe FeatureExtractor sopra citata. Infine, per ogni layer ne viene calcolato l'output, generando quindi l'immagine fake. L'immagine generata viene di conseguenza passata al discriminatore, al fine di determinare l'output di classificazione necessario a GradCam per generare le mappe di attenzione.
+Per concludere la panoramica sul codice, definiamo la classe GradCam avente il compito di generare, grazie all'utilizzo delle classi precedenti, le mappe di attenzione.
+Dopo aver richiamato il metodo dell'estrazione delle features, determiniamo un tensore \emph{one\_hot} contente la media dei valori di classificazione determinati dal Discriminatore su cui andiamo a fare la backpropagation. Successivamente, andiamo a definire il tensore \emph{grads\_val}, attraverso il quale andiamo a recuperare i gradienti precedentemente salvati. Infine, tramite questi gradienti, calcoliamo la mappa di attenzione \emph{cam} cercata.
 \begin{minted}[bgcolor=lightGray]{Python}
     features, output = self.extractor(input)
     one_hot = torch.mean(output)
@@ -247,8 +266,8 @@ Dopo aver richiamato il metodo dell'estrazione delle features, determiniamo un t
     return cam
 \end{minted}
 
-\subsection{CycleGAN e GradCam}
-Ora, come ultimo passaggio non ci resta che combinare insieme le due architetture fin qui definite, al fine di poter calcolare la Loss di consistenza dell'attenzione. Per fare questo quindi generiamo le mappe di attenzione all'interno della classe cycleGan model sia sulla traduzione da $A$ a $B$ che nella ricostruzione da $B$ a $A$. 
+\section{CycleGAN e GradCam}
+Ora, come ultimo passaggio non ci resta che combinare insieme le due architetture fin qui definite, al fine di poter calcolare la Loss di consistenza dell'attenzione. Per fare questo quindi generiamo le mappe di attenzione all'interno della classe cycle\_gan\_model sia sulla traduzione da $A$ a $B$, che nella ricostruzione da $B$ a $A$. 
 \begin{minted}[bgcolor=lightGray]{Python}
 def __init__(self, opt):
     self.gradcamG_A = GradCam(model=self.netG_A,
@@ -273,12 +292,11 @@ def forward(self):
     
 \end{minted}
 Come vediamo dal codice, generiamo le mappe di attenzione sull'immagine reale per ogni layer tra quelli da noi indicati. Questa operazione viene ripetuta, ovviamente con i rispettivi generatori e discriminatori, anche per l'immagine ricostruita e per la traduzione inversa da zebre a cavalli.
-\\Concludiamo ora la parte relativa al codice andando ad implementare la Loss di consistenza dell'attenzione. Per calcolarla utilizziamo una \emph{MSELoss}, ovvero la norma al quadrato tra le due attenzioni generate.
+\\Concludiamo ora la parte relativa al codice andando ad implementare la Loss di consistenza dell'attenzione. Per calcolarla utilizziamo una \emph{MSELoss}.
 \begin{minted}[bgcolor=lightGray]{Python}
 def backward_G(self):
-    self.att_lossA2B = self.MSE_LOSS(self.cam_fake_B.detach(),
+    self.att_lossA2B = self.MSE_LOSS(self.cam_fake_B,
                                     self.cam_rec_A)
-    self.att_lossB2A = self.MSE_LOSS(self.cam_fake_A.detach(),
+    self.att_lossB2A = self.MSE_LOSS(self.cam_fake_A,
                                     self.cam_rec_B)
 \end{minted}
-Analizzeremo successivamente il perchè vi sia un \emph{detach} sulle mappe di attenzione delle immagine fake.
