@@ -1,5 +1,5 @@
 \chapter{Risultati}
-In questo capitolo provvederemo ad analizzare i risultati dell'applicazione di GradCam alla CycleGAN secondo i metodi precedentemente descritti. Successivamente, descriveremo gli ulteriori sviluppi apportati alla rete e ne commenteremo i rispettivi risultati, confrontandoli tra loro grazie all'algoritmo FID.
+In questo capitolo provvederemo ad analizzare i risultati dell'applicazione dell'algoritmo GradCam alla CycleGAN secondo i metodi precedentemente descritti. Successivamente, descriveremo gli ulteriori sviluppi apportati alla rete e ne commenteremo i rispettivi risultati, confrontandoli tra loro grazie all'algoritmo FID.
 
 \section{Introduzione}
 Prima di vedere i risultati ottenuti descriviamo l'obiettivo della rete ed i parametri principali. La rete, come ampiamente spiegato, è una CycleGAN impiegata nella image-to-image translation. Nel nostro caso, il dataset scelto per addestrare e testare la rete è il dataset \emph{horse2zebra}. Il dataset è suddiviso in quattro parti: due per l'addestramento della rete, composte da 1334 immagini di cavalli e 1066 immagini di zebre, e due di test per la rete, composte da 120 cavalli e 139 zebre, per un totale di 2659 immagini.
@@ -9,7 +9,7 @@ Prima di vedere i risultati ottenuti descriviamo l'obiettivo della rete ed i par
 \section{Addestramento base}
 Prima di commentare i risultati ottenuti applicando GradCam alla rete, soffermiamoci sui risultati prodotti dalla rete non modificata. I risultati che ora andremo ad illustrare saranno quindi frutto dell'addestramento della CycleGAN proposta dal paper \cite{Zhu_2017_ICCV}. 
 \subsection{Traduzione da cavalli a zebre}
-Analizziamo i risultati ottenuti partendo dalla traduzione da cavalli a zebre. I risultati sono mediamente sufficienti, la rete in linea generale riesce a applicare le strisce che contraddistinguono le zebre sui cavalli, come vediamo in figura \ref{fig:Risultati Cycle GAN base (1)}.
+Analizziamo i risultati ottenuti partendo dalla traduzione da cavalli a zebre. I risultati sono mediamente sufficienti: la rete in linea generale riesce a applicare le strisce che contraddistinguono le zebre sui cavalli, come vediamo in figura \ref{fig:Risultati Cycle GAN base (1)}.
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=1\columnwidth]{images/risultati cyclegan zebre.png}
@@ -29,7 +29,7 @@ Ovviamente la rete non è esente da difetti: in alcuni casi non riesce ad applic
 
 I risultati migliori sono quelli ottenuti da immagini in cui il cavallo è ben riconoscibile in foto e non è distante. La rete, inoltre, ha difficoltà a riconoscere la sagoma del cavallo quando nella foto sono presenti più cavalli, soprattutto se sovrapposti in prospettiva. L'algoritmo di FID applicato alle immagini delle zebre generate dalla rete, rispetto a tutte le immagini delle zebre del dataset, restituisce come risultato 33.66.
 \subsection{Traduzione da zebre a cavalli}
-Valutiamo ora la traduzione contraria, da zebre a cavalli. In questo caso, notiamo come la rete abbia più difficoltà nella generazione delle immagini, come vediamo in figura \ref{fig:Risultati Horse Cycle GAN (1)}. E' infatti difficile trovare tra i risultati immagini pienamente soddisfacenti, che mettano in difficoltà anche l'occhio umano, cosa che invece, nel caso precedente, accadeva con più frequenza.
+Valutiamo ora la traduzione contraria, da zebre a cavalli. In questo caso, notiamo come la rete abbia più difficoltà nella generazione delle immagini, come vediamo in figura \ref{fig:Risultati Horse Cycle GAN (1)}. \'E infatti difficile trovare tra i risultati immagini pienamente soddisfacenti, che mettano in difficoltà anche l'occhio umano, cosa che invece, nel caso precedente, accadeva con più frequenza.
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=1\columnwidth]{images/CycleGan horse (1).jpeg} 
@@ -42,7 +42,7 @@ In questo caso l'algoritmo di FID, applicato rispetto a tutte le immagini dei ca
 \section{Addestramento con trasferimento dell'attenzione}
 Vediamo ora i risultati ottenuti dalla rete modificata utilizzando GradCam per generare la Loss di consistenza dell'attenzione. Sono stati effettuati più addestramenti con questa modalità, cambiando i parametri su cui ricavare l'attenzione, come vedremo successivamente. In questa sezione ci soffermeremo sui risultati ottenuti applicando il trasferimento dell'attenzione sull'ultimo blocco residuo. In questo caso, i risultati sono notevolmente migliorati nella traduzione da cavalli a zebre e hanno avuto un leggero miglioramento anche nella traduzione opposta.
 \subsection{Traduzione da cavalli a zebre}
-Come detto, si è migliorata l'efficienza della rete nella traduzione da cavalli a zebre. Infatti, i risultati mostrano una maggiore precisione nel riconoscimento del cavallo a cui applicare le strisce e una maggiore capacità di uniformare i cambiamenti. Come vediamo in figura \ref{fig:Risultati Zebre CycleGan + GradCam}, la rete genera, infatti, risultati migliori e più verosimili.
+Come detto, si è migliorata l'efficienza della rete nella traduzione da cavalli a zebre. Infatti, i risultati mostrano una maggiore precisione nel riconoscimento del cavallo a cui applicare le strisce e una maggiore capacità di uniformare i cambiamenti. Come vediamo in figura \ref{fig:Risultati Zebre CycleGan + GradCam}, la rete genera risultati migliori e più verosimili.
 \\Ovviamente, anche in questo caso la rete non è perfetta, sono ancora presenti alcuni problemi nel riconoscimento dei cavalli in determinate foto, come ad esempio quelle ritraenti più cavalli distanti dall'obiettivo.
 
 \begin{figure}[H]
@@ -56,7 +56,7 @@ Come detto, si è migliorata l'efficienza della rete nella traduzione da cavalli
 A sostegno di quanto affermato possiamo utilizzare l'algoritmo di FID ottenendo un risultato di 27.9.
 
 \subsection{Traduzione da zebre a cavalli}
-Come affermato precedentemente, in questo caso il miglioramento è minimo. Infatti, la rete fa ancora fatica ad eliminare uniformemente le strisce bianche e nere delle zebre, come vediamo dalla figura \ref{fig:Risultati cavalli GradCam}. I risultati sono molto simili ai precedenti, lo dimostra anche il risultato del FID, pari a 61.5, ancora molto elevato.
+Come affermato precedentemente, in questo caso il miglioramento è minimo. Infatti, la rete fa ancora fatica ad eliminare uniformemente le strisce bianche e nere delle zebre, come vediamo dalla figura \ref{fig:Risultati cavalli GradCam}. I risultati sono molto simili ai precedenti, lo dimostra anche il risultato del FID, pari a 61.5, ancora molto elevato, seppur migliore del precedente.
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=1\columnwidth]{images/image (2).jpeg} 
@@ -67,9 +67,9 @@ Come affermato precedentemente, in questo caso il miglioramento è minimo. Infat
 
 \section{Confronto tra le due reti}
 Abbiamo dunque visto come la rete venga migliorata applicando il trasferimento dell'attenzione. Ora possiamo andare nel dettaglio e, aiutandoci tramite esempi generati da entrambe le reti, confrontare i risultati.
-\\\emph{Per comodità le reti verranno da qui in poi indicate come rete \emph{standard} e rete \emph{GradCam}}
+\\Per comodità le reti verranno da qui in poi indicate come rete \emph{standard} e rete \emph{GradCam}.
 \\Nella sezione precedente, avevamo indicato tra i problemi della rete \emph{standard} la difficoltà nell'applicare in maniera uniforme le strisce bianche e nere ai cavalli; questo problema, come vediamo in figura \ref{fig:Confronto GradCam e noGradCam}, viene perfettamente risolto dalla rete \emph{GradCam}. Inoltre, le immagini generate dalla rete \emph{GradCam} hanno mediamente una qualità migliore rispetto alle altre. Questo lo si nota andando ad analizzare lo sfondo delle immagini generate: nel caso \emph{standard}, molto spesso, esso risultava essere corrotto, oppure perdeva colore, risultando la maggior parte delle volte più scuro e opaco. Nel caso della rete \emph{GradCam}, invece, lo sfondo risente meno di questi peggioramenti, come notiamo dal colore del cielo della prima immagine della figura \ref{fig:Confronto GradCam e noGradCam}, e ciò porta ad una migliore qualità nel complesso. La rete \emph{GradCam} è inoltre in grado di riconoscere meglio i cavalli: infatti alcuni di essi, specie quelli dal manto completamente nero, mettevano in seria difficoltà la rete \emph{standard}, mentre la rete \emph{GradCam}, seppur non ancora in maniera ottimale, riesce a portare buoni risultati anche su questa tipologia di immagini.
-Un ulteriore miglioramento che salta all'occhio risiede nel colore del manto delle zebre generate dalla rete \emph{GradCam}: molto spesso infatti, anche nelle migliori immagini generate dalla rete \emph{standard}, il manto presentava sfumature scure, tendenti al marrone, dovute al colore del cavallo originale. Nelle immagini prodotte dalla rete \emph{GradCam}, invece, queste sfumature si sono, nella maggior parte delle immagini, azzerate.
+Un ulteriore miglioramento che salta all'occhio risiede nel colore del manto delle zebre generate dalla rete \emph{GradCam}: molto spesso infatti, anche nelle migliori immagini generate dalla rete \emph{standard}, il manto presentava sfumature scure, tendenti al marrone, dovute al colore del cavallo originale. Nelle immagini prodotte dalla rete \emph{GradCam}, invece, queste sfumature si sono, nella maggior parte dei casi, azzerate.
 
 
 
@@ -110,7 +110,7 @@ Dopo aver commentato i risultati ottenuti sfruttando GradCam sull'ultimo blocco 
 \textbf{Rete}          & \textbf{FID Zebre}        &   \textbf{FID Cavalli}    \\
 \hline
 \emph{standard}          & 33.66     & 64.57  \\ \hline
-\emph{GradCam}           & 27.94     & 61.54  \\ \hline
+\emph{GradCam}           & \textbf{27.94}     & \textbf{61.54}  \\ \hline
 \emph{GradCamWithCoeff}  & 31.90     & 66.01  \\ \hline
 \emph{GradCamA2B}        & 30.60     & 65.32  \\ \hline
 \emph{GradCamWithDetach} & 32.74     & 62.71  \\ \hline
@@ -132,7 +132,7 @@ self.att_lossB2A = self.MSE_LOSS(self.cam_fake_A.detach(),
 \end{minted}
 è stato fatto perchè senza di esso sono entrambe le attenzioni che tendono ad un'attenzione comune, sia quella dell'immagine reale che quella dell'immagine fake. Idealmente, però, sarebbe solo l'attenzione dell'immagine fake a doversi adattare a quella dell'immagine reale, ed è proprio a questo che serve il \emph{detach} posto prima del calcolo della Loss.
 \\Infine, l'utilizzo di GradCam su quattro blocchi residui, anzichè solo sull'ultimo, è stato effettuato per provare a migliorare la consistenza dell'attenzione. I layer scelti (10,14,15,18), infatti, mostravano i risultati migliori nella generazione delle attenzioni.
-Concludiamo questa sezione andando a vedere i risultati generati dalle varie reti sulle stesse immagini. Come vediamo dalle figure \ref{fig:Confronto tra tutte le reti zebre} \ref{fig:Confronto tra tutte le reti cavalli}, la rete \emph{GradCam} si conferma la migliore.
+\\Concludiamo, infine, questa sezione andando a vedere i risultati generati dalle varie reti sulle stesse immagini. Come vediamo dalle figure \ref{fig:Confronto tra tutte le reti zebre} e \ref{fig:Confronto tra tutte le reti cavalli}, la rete \emph{GradCam} si conferma la migliore.
 
 
 \begin{figure}[H]
@@ -150,3 +150,41 @@ Concludiamo questa sezione andando a vedere i risultati generati dalle varie ret
 \caption{In foto il confronto tra le immagini generate dalle reti, ordinate decrescentemente da sinistra a destra secondo il risultato dell'algoritmo di FID.}
 \label{fig:Confronto tra tutte le reti cavalli}
 \end{figure}  
+
+\section{Dataset Apple2Orange}
+Dopo aver visto e ampiamente commentato i risultati delle reti utilizzando il dataset \emph{horse2zebra}, vediamo ora i risultati ottenuti utilizzando il dataset \emph{apple2orange}. Il dataset in questione è strutturato in maniera uguale al precedente, ovvero in quattro parti: le prime due per l'addestramento, composte da xxxx immagini di mele e xxxx immagini di arance e le altre due per la fase di test, composte da xxxx mele e xxxx arance, per un totale di xxxx immagini. Il numero di epoche ed il \emph{learning rate} sono rimasti invariati rispetto all'addestramento precedentemente descritto.
+\\Per quanto riguarda le tipologie di reti addestrate con questo dataset, queste sono due: la rete \emph{standard} e la rete \emph{GradCam}. Anche in questo caso, la rete \emph{GradCam} ha migliorato la rete per entrambe le traduzioni, come vediamo dalla tabella \ref{tab:Fid apple2orange Table}.
+\begin{center}
+\begin{tabular}{ | c | c | c | }
+\hline
+\textbf{Rete}          & \textbf{FID Arance}        &   \textbf{FID Mele}    \\
+\hline
+\emph{standard}          & 105.15    & 81.05  \\ \hline
+\emph{GradCam}           & \textbf{103.89}     & \textbf{75.79}  \\ \hline
+\end{tabular}
+\captionof{table}{Comparazioni tra i valori dei FID delle due architetture utilizzate.}
+\label{tab:Fid apple2orange Table}
+\end{center}
+\subsection{Traduzione da mele ad arance}
+Come vediamo dai valori in tabella \ref{tab:Fid apple2orange Table}, entrambe le reti risultano discostarsi molto da risultati reali. Analizzando le immagini, infatti, notiamo come la rete riesca sì ad applicare il colore arancione alle mele, ma non riesca a mantenere una buona qualità dell'immagine. Un ulteriore problema che affligge la rete \emph{standard} è la mancanza di opacità nel colore. Infatti, nelle arance generate da questa rete il colore è molto spesso sbiadito, quasi tendente al giallo rispetto che all'arancione. Questo problema, come si vede per la figura \ref{fig:Confronto tra tutte le reti orange} sembra essere parzialmente risolto dalla rete \emph{GradCam}. Questa rete, infatti, sembra riuscire ad applicare un colore più marcato e più reale alle immagini delle mele, avendo però difficoltà, come per la rete \emph{standard}, a mantenere la qualità dell'immagine di partenza.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=0.6\columnwidth]{images/merge orange.png}
+\end{center}
+\caption{In foto il confronto tra le immagini generate dalla rete \emph{standard} prima e dalla rete \emph{GradCam} poi.}
+\label{fig:Confronto tra tutte le reti orange}
+\end{figure}  
+
+\subsection{Traduzione da arance a mele}
+Valutiamo ora la traduzione contraria, da arance a mele. Anche in questo caso i risultati sono ancora molto distanti da valori accettabili, sempre per colpa della qualità dell'immagine generata. Come nel caso precedente, infatti, l'immagine prodotta da entrambe le reti ha una qualità di molto inferiore rispetto all'immagine di partenza, come vediamo dalla figura \ref{fig:Confronto tra tutte le reti apple}.
+Analizzando più nel dettaglio i risultati prodotti, notiamo come la rete \emph{standard}, come nel caso precedente, fatichi ad applicare un colore marcato alla mela. Infatti, la maggior parte delle immagini generate dalla rete \emph{standard} risulta essere sbiadita e con un colore misto tra il rosso della mela e l'arancione dell'arancia da ottenere. Questo problema sembra, anche in questo caso, essere risolto dalla rete \emph{GradCam}, come vediamo sempre dalle immagini di figura \ref{fig:Confronto tra tutte le reti apple}.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=0.6\columnwidth]{images/merge apple.png}
+\end{center}
+\caption{In foto il confronto tra le immagini generate dalla rete \emph{standard} prima e dalla rete \emph{GradCam} poi.}
+\label{fig:Confronto tra tutte le reti apple}
+\end{figure}  
+
