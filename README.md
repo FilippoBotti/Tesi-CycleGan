@@ -15,8 +15,7 @@ su cui si basano le CycleGANs è detta consistenza del ciclo. Idealmente,
 infatti, data un’immagine iniziale e applicandovi due volte il processo di traduzione, prima dal dominio iniziale a quello finale, e successivamente dal
 dominio finale a quello iniziale, si ottiene un risultato uguale all’immagine di
 partenza, generando così un ciclo che lega le traduzioni.
-All’interno di questo elaborato vedremo nel dettaglio come funziona una Cy-
-cleGAN, perché è così efficiente e, soprattutto, provvederemo ad un miglioramento dell’architettura su cui essa si basa, sfruttando l’algoritmo GradCam.
+All’interno di questo elaborato vedremo nel dettaglio come funziona una CycleGAN, perché è così efficiente e, soprattutto, provvederemo ad un miglioramento dell’architettura su cui essa si basa, sfruttando l’algoritmo GradCam.
 L’algoritmo GradCam non è altro che un algoritmo in grado di mostrare
 graficamente il comportamento di una rete durante l’elaborazione di un’immagine. GradCam, infatti, è in grado di illustrare, grazie al gradiente della
 rete, su quali punti dell’immagine la rete si focalizza maggiormente durante la generazione di un’immagine. Sfruttando questo concetto, che d’ora in
