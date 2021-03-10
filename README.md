@@ -1,3 +1,4 @@
+<h1>Trasferimento dell'attenzione in reti GAN cicliche<\h1>
 Negli ultimi anni si è assistito a un notevole sviluppo nel settore tecnologico
 per quanto riguarda l’intelligenza artificiale. Quest’ultima è ormai presente
 nella maggior parte degli ambiti: dall’ambito medico, a quello industriale,
