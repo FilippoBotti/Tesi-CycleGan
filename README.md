@@ -1,6 +1,6 @@
 <h1> Trasferimento dell'attenzione in reti GAN cicliche
   
-Negli ultimi anni si è assistito a un notevole sviluppo nel settore tecnologico
+<h5>Negli ultimi anni si è assistito a un notevole sviluppo nel settore tecnologico
 per quanto riguarda l’intelligenza artificiale. Quest’ultima è ormai presente
 nella maggior parte degli ambiti: dall’ambito medico, a quello industriale,
 dalla creazione di bot capaci di aiutare l’uomo, all’elaborazione delle immagini. E proprio quest’ultimo ramo quello su cui si basa questo elaborato. ´
